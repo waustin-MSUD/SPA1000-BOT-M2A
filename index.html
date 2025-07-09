@@ -194,6 +194,16 @@
       chatbox.innerHTML += `<p><strong>Bot:</strong> Sorry, there was an error processing your request.</p>`;
     }
   }
+  window.onload = function () {
+  document.getElementById('userInput').focus();
+};
+
+document.getElementById('userInput').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    sendMessage();
+  }
+});
 </script>
 
 </body>
