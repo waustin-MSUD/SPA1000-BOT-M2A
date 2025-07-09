@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spanish Tutor | MSU Denver</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+  }
+
+  header {
+    background-color: #003DA5;
+    color: #fff;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+  }
+
+  header img {
+    height: 50px;
+    margin-right: 15px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  main {
+    margin: 20px auto;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    padding: 20px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  #moduleSelect {
+    margin-bottom: 15px;
+    padding: 6px;
+    font-size: 1rem;
+  }
+
+  #chatbox {
+    height: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f4f4f4;
+    margin-bottom: 10px;
+  }
+
+  #userInput {
+    width: 70%;
+    padding: 8px;
+    font-size: 1rem;
+  }
+
+  button {
+    padding: 8px 12px;
+    background-color: #C8102E;
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #a60e26;
+  }
+
+  .loading {
+    display: none;
+    font-style: italic;
+    color: #63666A;
+    margin-top: 5px;
+  }
+
+  p {
+    margin: 5px 0;
+  }
+
+  strong {
+    color: #003DA5;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #63666A;
+    margin-top: 20px;
+  }
+
+  @media (max-width: 600px) {
+    #userInput {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    button {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="./images/MSU_Denver.webp" alt="MSU Denver Logo">
+  <h1>Charlando</h1>
+</header>
+
+<main>
+  <label for="moduleSelect">Favor de elegir su lección preferida: </label>
+  <select id="moduleSelect">
+    <option value="1">Lección 1</option>
+    <option value="2">Lección 2</option>
+    <option value="3">Lección 3</option>
+  </select>
+
+  <div id="chatbox"></div>
+
+  <input type="text" id="userInput" placeholder="Ask something...">
+  <button onclick="sendMessage()">Send</button>
+
+  <div id="loading" class="loading">Bot is typing…</div>
+</main>
+
+<footer>
+  &copy; Metropolitan State University of Denver
+</footer>
+
+<script>
+  const urlParams = new URLSearchParams(window.location.search);
+  document.getElementById('moduleSelect').value = urlParams.get('module') || '1';
+
+  function getSystemMessage(module) {
+    const rules = {
+      '1': "You are a Module 1 Spanish tutor. Use 80% English, 20% Spanish. Only use: hola, gracias, ¿cómo estás?, soy, tengo.",
+      '2': "You are a Module 2 tutor. Use 50% Spanish. Add: quiero, voy a, necesito, el/la, los/las.",
+      '3': "You are a Module 3 tutor. Use 70% Spanish. Add past tense: ayer fui, tomé, hablé."
+    };
+    return rules[module] || rules['1'];
+  }
+
+  async function sendMessage() {
+    const module = document.getElementById('moduleSelect').value;
+    const userInput = document.getElementById('userInput');
+    const chatbox = document.getElementById('chatbox');
+    const loading = document.getElementById('loading');
+    const message = userInput.value.trim();
+    if (!message) return;
+
+    chatbox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+    userInput.value = '';
+    chatbox.scrollTop = chatbox.scrollHeight;
+
+    loading.style.display = 'block';
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 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'
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: getSystemMessage(module) },
+            { role: "user", content: message }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      loading.style.display = 'none';
+
+      chatbox.innerHTML += `<p><strong>Bot:</strong> ${data.choices[0].message.content}</p>`;
+      chatbox.scrollTop = chatbox.scrollHeight;
+    } catch (err) {
+      loading.style.display = 'none';
+      chatbox.innerHTML += `<p><strong>Bot:</strong> Sorry, there was an error processing your request.</p>`;
+    }
+  }
+</script>
+
+</body>
+</html>
