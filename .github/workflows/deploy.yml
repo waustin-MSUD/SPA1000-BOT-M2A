@@ -1,0 +1,23 @@
+name: Deploy to GitHub Pages with API key
+
+on:
+  push:
+    branches:
+      - main  # or whatever your default branch is
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Replace API key
+        run: |
+          find . -type f -name "*.html" -exec sed -i \
+            "s/__OPENAI_API_KEY__/${{ secrets.OPENAI_API_KEY }}/g" {} +
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .  # adjust if you have a build folder
