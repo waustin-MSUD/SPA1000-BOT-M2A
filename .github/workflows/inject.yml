@@ -1,7 +1,7 @@
 name: Inject API key and deploy
 
 on:
-  push:
+  workflow_dispatch:
     branches:
       - main
 
